@@ -32,13 +32,31 @@ n_leaves = 2;
 
 // Stile length
 l_stile = h_window - 2 * frame_gap;
-// Rail length 
+// Rail length visible
 l_rail_visible = (w_window - 2 * frame_gap - center_gap 
         - 2 * n_leaves * w_stile);
+// Rail length to cut
 l_rail_cut = l_rail_visible  + 2 * d_slot;
 
-stile();
-translate([w_stile + l_rail_visible,0,0]) mirror([1, 0, 0])stile();
+w_leaf= 2 * w_stile + l_rail_visible; 
+
+// A shutter is two leaves
+leaf();
+translate([2 * w_leaf + center_gap - shutter_overlap, 0, t_frame]) mirror([0, 0, 1]) mirror([1, 0, 0]) leaf();
+
+// A leaf is 2 stiles, 3 rails (top, middle, bottom) and 2 panels
+module leaf() {
+    stile();
+    difference() {
+        translate([2 * w_stile + l_rail_visible,0,0]) mirror([1, 0, 0])stile();
+        translate([2 * w_stile + l_rail_visible - shutter_overlap, 0, 0]) cube([shutter_overlap, l_stile, t_frame/2]);
+    }
+    
+    color([0, 0.5, 0]) {
+        translate([w_stile - d_slot, 0, 0]) rail();
+        translate([w_stile - d_slot, l_stile, 0]) mirror([0, 1, 0]) rail();
+    }
+}
 
 module stile()
 {
@@ -48,3 +66,15 @@ module stile()
     }
 }
 
+module rail()
+{
+    difference() {
+        cube([l_rail_cut, w_rail, t_frame]);
+        translate([0, w_rail-d_slot,(t_frame-w_slot)/2]) cube([l_rail_cut, d_slot, w_slot]);
+        // Tenons
+        cube([d_slot,w_rail, (t_frame-w_slot)/2]);
+        translate([0,0,t_frame]) mirror ([0, 0, 1]) cube([d_slot,w_rail, (t_frame-w_slot)/2]);
+        translate([l_rail_cut, 0, 0]) mirror ([1, 0, 0]) cube([d_slot,w_rail, (t_frame-w_slot)/2]);
+        translate([l_rail_cut, 0, t_frame]) mirror([1, 0, 0]) mirror ([0, 0, 1]) cube([d_slot,w_rail, (t_frame-w_slot)/2]);
+    }
+}

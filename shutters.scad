@@ -27,6 +27,9 @@ shutter_overlap = 1/4;
 // expasion and contraction
 panel_gap = 1/16;
 
+// Panel thickness
+t_panel = 1/4;
+
 // number of shutter leaves
 n_leaves = 2;
 
@@ -37,6 +40,8 @@ l_rail_visible = (w_window - 2 * frame_gap - center_gap
         - 2 * n_leaves * w_stile);
 // Rail length to cut
 l_rail_cut = l_rail_visible  + 2 * d_slot;
+
+mid_rail_center = 4/8 * l_stile;
 
 w_leaf= 2 * w_stile + l_rail_visible; 
 
@@ -53,8 +58,23 @@ module leaf() {
     }
     
     color([0, 0.5, 0]) {
-        translate([w_stile - d_slot, 0, 0]) rail();
-        translate([w_stile - d_slot, l_stile, 0]) mirror([0, 1, 0]) rail();
+        x_rail = w_stile - d_slot;
+        translate([x_rail, 0, 0]) rail();
+        translate([x_rail, l_stile, 0]) mirror([0, 1, 0]) rail();
+        translate([x_rail, mid_rail_center - w_rail/2, 0]) rail();
+        
+    }
+    
+    color([0, 0, 0.7]) {
+        // center position
+        panel_x = w_stile + l_rail_visible/2;
+        bot_panel_y = (mid_rail_center + w_rail/2)/2;
+        top_panel_y = (mid_rail_center + l_stile - w_rail/2)/2;
+        w_panel = l_rail_visible + 2 * (d_slot - panel_gap);
+        h_panel_bot = mid_rail_center - 3/2*w_rail + 2 * (d_slot - panel_gap);
+        h_panel_top = l_stile - mid_rail_center - 3/2*w_rail + 2 * (d_slot - panel_gap);
+        translate([panel_x, bot_panel_y, t_frame/2]) cube([w_panel, h_panel_bot, t_panel], center=true);
+        translate([panel_x, top_panel_y, t_frame/2]) cube([w_panel, h_panel_top, t_panel], center=true);
     }
 }
 
@@ -76,5 +96,14 @@ module rail()
         translate([0,0,t_frame]) mirror ([0, 0, 1]) cube([d_slot,w_rail, (t_frame-w_slot)/2]);
         translate([l_rail_cut, 0, 0]) mirror ([1, 0, 0]) cube([d_slot,w_rail, (t_frame-w_slot)/2]);
         translate([l_rail_cut, 0, t_frame]) mirror([1, 0, 0]) mirror ([0, 0, 1]) cube([d_slot,w_rail, (t_frame-w_slot)/2]);
+    }
+}
+
+// rail with slots on both sides
+module mid_rail()
+{
+    difference() {
+        rail();
+        translate([0, 0,(t_frame-w_slot)/2]) cube([l_rail_cut, d_slot, w_slot]);
     }
 }
